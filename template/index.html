@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">    
+    </script>
 </head>
 <body>
     <h1>LaTeX Formula Generator</h1>
@@ -14,7 +17,7 @@
 
     {% if result %}
     <div class="result">
-        <p>{{ result }}</p>
+        <p>${{ result }}$$</p>
     </div>
     {% endif %}
 </body>
