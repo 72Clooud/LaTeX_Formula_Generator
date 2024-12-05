@@ -1,14 +1,10 @@
 import os
-import base64
-
-import matplotlib.pyplot as plt
+import re
 
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
-from sympy.printing.preview import preview
-from sympy import latex 
 
-from flask import Flask, request, render_template, url_for, session
+from flask import Flask, request, render_template, url_for
 from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,18 +13,26 @@ app = Flask(__name__, template_folder='template', static_folder='static')
 
 
 template = """
-You are an AI specialized in generating mathematical and machine learning formulas in LaTeX. For the given question, return ONLY the LaTeX formula. No explanations, no additional text, just the LaTeX formula. Your answer should look like this: "$$ formula $$". 
+You are a LaTeX formula generator. Your ONLY task is to output LaTeX formulas. Do not include any explanation, any extra words, or any context. Your responses MUST ONLY consist of LaTeX code enclosed in double dollar signs `$$`.
 
-Here is the question: {question}
+Here is the user's question: {question}
 
-Answer: 
+Output ONLY the formula enclosed in `$$`, without any extra text:
 """
 
 
-model = OllamaLLM(model="Mistral")
+
+model = OllamaLLM(model="Mistral", temperature=0)
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
+
+def extract_latex_only(response):
+    match = re.search(r'\$\$(.*?)\$\$', response, re.DOTALL)
+    if match:
+        return f"$${match.group(1)}$$"
+    else:
+        return "Error: No valid LaTeX found"
 
 @app.route('/', methods=["GET", "POST"])
 def index():
@@ -36,7 +40,8 @@ def index():
         return render_template('index.html')
     elif request.method == "POST":
         question = request.form.get("question")
-        result = chain.invoke({"question": question})
+        result = chain.invoke({"question": question, "reset_context": True})
+        result = extract_latex_only(result)
         return render_template('index.html', result=result)
 
 if __name__ == "__main__":
