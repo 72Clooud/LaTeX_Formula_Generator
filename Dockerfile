@@ -6,7 +6,7 @@ COPY . /app
 
 RUN pip install --no-cachce-dir -r requirements.txt
 
-ENV FLASK_APP = app.py
+ENV FLASK_APP = main.py
 
 EXPOSE 5000
 
